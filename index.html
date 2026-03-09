@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OCEAN SUPPLY | Корпоративный портал</title>
+    
+    <!-- Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --corp-navy: #1F4E79;    /* Базовый темно-синий */
+            --ocean-blue: #2E6FA7;   /* Океанский синий */
+            --aqua-light: #BFE7F4;   /* Светло-голубой фон */
+            --sky-blue: #9ED3E6;     /* Акцентный голубой */
+            --white: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-muted: #5D6D7E;
+            --border: #D5DBDB;
+            --gradient: linear-gradient(135deg, #2E6FA7 0%, #1F4E79 100%);
+            --font-main: 'Montserrat', sans-serif;
+        }
+
+        /* --- БАЗОВЫЕ СТИЛИ (ФИКС ЧЕРНОГО ЭКРАНА) --- */
+        html, body {
+            background-color: var(--white);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            font-family: var(--font-main);
+            width: 100%; min-height: 100vh;
+            visibility: visible; opacity: 1;
+        }
+
+        .container { padding: 0 20px; box-sizing: border-box; }
+
+        /* --- ВЕРХНЯЯ КОНТАКТНАЯ ПОЛОСА --- */
+        .top-bar {
+            background: #F4F7F9;
+            padding: 8px 0;
+            font-size: 10px;
+            color: var(--corp-navy);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--white);
+            padding: 15px 0;
+            position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { 
+            font-weight: 700; font-size: 20px; color: var(--corp-navy); 
+            letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;
+        }
+        .logo span { color: var(--ocean-blue); }
+        .cart-trigger { 
+            background: var(--corp-navy); color: white; padding: 8px 15px; 
+            border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;
+        }
+
+        /* --- HERO BANNER --- */
+        .hero {
+            height: 300px;
+            background: linear-gradient(rgba(31, 78, 121, 0.7), rgba(31, 78, 121, 0.7)), 
+                        url('https://images.unsplash.com/photo-1551248429-40975aa4de74?q=80&w=800') center/cover;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: var(--white);
+        }
+        .hero h1 { font-size: 28px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .hero p { font-size: 14px; opacity: 0.9; max-width: 80%; margin: 0 auto; font-weight: 300; }
+
+        /* --- INFO BLOCK (BLUE GRADIENT) --- */
+        .info-block {
+            background: var(--gradient);
+            color: var(--white);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .info-block h2 { font-size: 22px; margin-bottom: 15px; }
+        .info-block p { font-size: 14px; opacity: 0.8; line-height: 1.6; font-weight: 300; }
+
+        /* --- CATEGORY TABS --- */
+        .cat-nav {
+            background: var(--white);
+            position: sticky; top: 62px; z-index: 900;
+            padding: 15px 0; border-bottom: 1px solid var(--border);
+        }
+        .cat-list { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 20px; }
+        .cat-list::-webkit-scrollbar { display: none; }
+        .cat-tab {
+            white-space: nowrap; font-size: 11px; text-transform: uppercase;
+            font-weight: 600; color: var(--text-muted); cursor: pointer; padding-bottom: 5px;
+        }
+        .cat-tab.active { color: var(--corp-navy); border-bottom: 2px solid var(--corp-navy); }
+
+        /* --- CATALOG GRID --- */
+        .catalog { padding: 25px 0 100px; background: #F8FAFB; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .product-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 2px; /* Корпоративный строгий стиль */
+            display: flex; flex-direction: column;
+            transition: 0.3s;
+        }
+        .p-img { width: 100%; aspect-ratio: 1.2/1; object-fit: cover; margin-bottom: 15px; border-radius: 2px; }
+        .p-name { font-size: 14px; font-weight: 600; color: var(--corp-navy); height: 34px; overflow: hidden; margin-bottom: 8px; line-height: 1.2; }
+        .p-price { font-size: 16px; font-weight: 700; color: var(--ocean-blue); margin-bottom: 12px; }
+        .btn-add {
+            width: 100%; background: var(--corp-navy); color: white;
+            border: none; padding: 10px; font-size: 10px; font-weight: 600;
+            text-transform: uppercase; cursor: pointer; border-radius: 2px;
+        }
+        .btn-add:active { background: var(--ocean-blue); }
+
+        /* --- LOGISTICS BLOCK --- */
+        .logistics-section {
+            padding: 50px 20px;
+            background: var(--aqua-light);
+            text-align: center;
+        }
+        .logistics-section h3 { color: var(--corp-navy); margin-bottom: 15px; }
+        .logistics-section p { font-size: 13px; color: var(--ocean-blue); line-height: 1.5; }
+
+        /* --- FOOTER --- */
+        .footer {
+            background: #1A2B3C;
+            color: var(--white);
+            padding: 40px 20px;
+            font-size: 12px;
+        }
+        .footer-logo { font-size: 18px; font-weight: 700; margin-bottom: 15px; }
+        .footer-grid { display: grid; gap: 20px; }
+        .f-info p { opacity: 0.6; margin-bottom: 10px; }
+
+        /* --- CART DRAWER --- */
+        .cart-drawer {
+            position: fixed; bottom: -100%; left: 0; width: 100%; height: 80vh;
+            background: var(--white); z-index: 2000; border-top: 4px solid var(--corp-navy);
+            transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            padding: 25px; border-radius: 12px 12px 0 0;
+            display: flex; flex-direction: column; box-sizing: border-box;
+        }
+        .cart-drawer.active { bottom: 0; }
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1500; display: none;
+        }
+        .overlay.active { display: block; }
+
+        .cart-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 0; border-bottom: 1px solid var(--border);
+        }
+        .cart-total {
+            margin-top: auto; padding-top: 20px; border-top: 2px solid var(--corp-navy);
+            display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;
+        }
+
+        /* --- CHECKOUT --- */
+        .checkout-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--white); z-index: 3000; display: none;
+            padding: 40px 25px; flex-direction: column; box-sizing: border-box;
+        }
+        .checkout-modal.active { display: flex; }
+        .checkout-modal h2 { color: var(--corp-navy); margin-bottom: 20px; }
+        input, textarea {
+            width: 100%; padding: 14px; background: #F4F7F9; border: 1px solid var(--border);
+            margin-bottom: 15px; font-family: var(--font-main); font-size: 14px; border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar container">
+        <span>Global Seafood Supply</span>
+        <span>Est. 1998</span>
+    </div>
+
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">OCEAN<span>SUPPLY</span></div>
+            <div class="cart-trigger" onclick="toggleCart(true)">ЗАКАЗ (<span id="cart-count">0</span>)</div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Прямые поставки</h1>
+            <p>Международная дистрибуция морепродуктов высшего качества из экологически чистых зон вылова.</p>
+        </div>
+    </section>
+
+    <section class="info-block">
+        <div class="container">
+            <h2>Доверие и стабильность</h2>
+            <p>Мы обеспечиваем бесперебойные поставки рыбы шоковой заморозки для ресторанов, торговых сетей и производств по всей стране. Каждая партия проходит трехэтапный контроль качества.</p>
+        </div>
+    </section>
+
+    <div class="cat-nav">
+        <div class="cat-list" id="cat-tabs"></div>
+    </div>
+
+    <main class="catalog">
+        <div class="container">
+            <div class="product-grid" id="product-grid"></div>
+        </div>
+    </main>
+
+    <section class="logistics-section">
+        <div class="container">
+            <h3>Глобальная логистика</h3>
+            <p>Собственный парк рефрижераторов и сеть складов с поддержкой температуры -18°C. Мы доставляем продукт так, словно его только что подняли из воды.</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="f-info">
+                <div class="footer-logo">OCEAN<span>SUPPLY</span></div>
+                <p>Промышленный дистрибьютор морепродуктов.</p>
+                <p>Москва, Проектируемый проезд № 1212</p>
+                <p>+7 (495) 000-00-00</p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
+    
+    <div class="cart-drawer" id="cart-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0; font-size: 20px;">Лист заказа</h2>
+            <div onclick="toggleCart(false)" style="cursor:pointer; font-size: 24px;">&times;</div>
+        </div>
+        <div id="cart-items" style="flex-grow:1; overflow-y:auto;"></div>
+        <div class="cart-total">
+            <span>Итого</span>
+            <span id="cart-total-sum">0 ₽</span>
+        </div>
+    </div>
+
+    <div class="checkout-modal" id="checkout-modal">
+        <h2>Детали отгрузки</h2>
+        <input type="text" id="name" placeholder="Контактное лицо">
+        <input type="tel" id="phone" placeholder="Телефон для связи">
+        <input type="text" id="address" placeholder="Адрес отгрузки">
+        <textarea id="comment" rows="3" placeholder="Дополнительные инструкции"></textarea>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        
+        function initApp() {
+            try {
+                tg.expand();
+                tg.ready();
+                tg.setHeaderColor('#FFFFFF');
+                tg.setBackgroundColor('#FFFFFF');
+            } catch (e) { console.error(e); }
+        }
+        initApp();
+
+        const PRODUCTS = [
+            { id: 1, cat: "Рыба", name: "Тунец Вьетнам стейк", price: 490, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=300" },
+            { id: 2, cat: "Рыба", name: "Форель Карелия стейк", price: 1190, img: "https://images.unsplash.com/photo-1551248429-40975aa4de74?q=80&w=300" },
+            { id: 3, cat: "Рыба", name: "Семга Чили стейк", price: 1750, img: "https://images.unsplash.com/photo-1544070282-3915272ef411?q=80&w=300" },
+            { id: 4, cat: "Морепродукты", name: "Креветка Королевская", price: 790, img: "https://images.unsplash.com/photo-1559742811-822873691df8?q=80&w=300" },
+            { id: 5, cat: "Морепродукты", name: "Филе гребешка", price: 1190, img: "https://images.unsplash.com/photo-1534604973900-c41ab4c9d3ba?q=80&w=300" },
+            { id: 6, cat: "Икра", name: "Икра форели 250г", price: 1690, img: "https://images.unsplash.com/photo-1534604973900-c41ab4c9d3ba?q=80&w=300" },
+            { id: 7, cat: "П/Ф", name: "Кольца кальмара", price: 690, img: "https://images.unsplash.com/photo-1534604973900-c41ab4c9d3ba?q=80&w=300" },
+            { id: 8, cat: "Рыба", name: "Дорадо Турция 400+", price: 1030, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=300" },
+            { id: 9, cat: "Рыба", name: "Сибас Турция 400+", price: 1050, img: "https://images.unsplash.com/photo-1551248429-40975aa4de74?q=80&w=300" },
+            { id: 10, cat: "Морепродукты", name: "Мясо краба 500г", price: 2200, img: "https://images.unsplash.com/photo-1534604973900-c41ab4c9d3ba?q=80&w=300" }
+        ];
+
+        let cart = [];
+        let currentCat = "Все";
+
+        function renderCats() {
+            const cats = ["Все", ...new Set(PRODUCTS.map(p => p.cat))];
+            document.getElementById('cat-tabs').innerHTML = cats.map(c => `
+                <div class="cat-tab ${c === currentCat ? 'active' : ''}" onclick="setCat('${c}')">${c}</div>
+            `).join('');
+        }
+
+        function setCat(c) {
+            currentCat = c;
+            renderCats(); renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            const filtered = currentCat === "Все" ? PRODUCTS : PRODUCTS.filter(p => p.cat === currentCat);
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <img src="${p.img}" class="p-img">
+                    <div class="p-name">${p.name}</div>
+                    <div class="p-price">${p.price} ₽</div>
+                    <button class="btn-add" onclick="add(${p.id})">Добавить</button>
+                </div>
+            `).join('');
+        }
+
+        function add(id) {
+            const p = PRODUCTS.find(x => x.id === id);
+            const inCart = cart.find(x => x.id === id);
+            if (inCart) inCart.qty++; else cart.push({...p, qty: 1});
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            updateCart();
+        }
+
+        function updateCart() {
+            const count = cart.reduce((a, b) => a + b.qty, 0);
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-total-sum').innerText = total + " ₽";
+
+            const list = document.getElementById('cart-items');
+            list.innerHTML = cart.map(i => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight:600; font-size:14px;">${i.name}</div>
+                        <div style="font-size:12px; color:var(--ocean-blue);">${i.qty} x ${i.price} ₽</div>
+                    </div>
+                    <div onclick="remove(${i.id})" style="color:red; font-size:20px; cursor:pointer;">&times;</div>
+                </div>
+            `).join('');
+
+            if (count > 0) {
+                tg.MainButton.show();
+                tg.MainButton.setText(`ОФОРМИТЬ ОТГРУЗКУ (${total} ₽)`);
+                tg.MainButton.setParams({ color: '#1F4E79' });
+                tg.MainButton.onClick(onMainButtonClick);
+            } else {
+                tg.MainButton.hide();
+            }
+        }
+
+        function remove(id) {
+            cart = cart.filter(x => x.id !== id);
+            updateCart();
+        }
+
+        function toggleCart(show) {
+            document.getElementById('cart-drawer').classList.toggle('active', show);
+            document.getElementById('overlay').classList.toggle('active', show);
+        }
+
+        function onMainButtonClick() {
+            if (document.getElementById('checkout-modal').classList.contains('active')) {
+                send();
+            } else {
+                toggleCart(false);
+                document.getElementById('checkout-modal').classList.add('active');
+                tg.BackButton.show();
+                tg.MainButton.setText("ПОДТВЕРДИТЬ ЗАКАЗ");
+            }
+        }
+
+        tg.BackButton.onClick(() => {
+            document.getElementById('checkout-modal').classList.remove('active');
+            tg.BackButton.hide();
+            updateCart();
+        });
+
+        function send() {
+            const name = document.getElementById('name').value;
+            if(!name) return tg.showAlert("Введите ФИО контактного лица");
+            
+            tg.showConfirm("Вы подтверждаете заказ отгрузки?", (ok) => {
+                if(ok) {
+                    const data = {
+                        customer: name,
+                        items: cart,
+                        total: cart.reduce((a, b) => a + (b.price * b.qty), 0)
+                    };
+                    tg.sendData(JSON.stringify(data));
+                    tg.close();
+                }
+            });
+        }
+
+        renderCats();
+        renderProducts();
+    </script>
+</body>
+</html>
